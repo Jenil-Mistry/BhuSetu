@@ -1,0 +1,9 @@
+# AI Agent & Skill Configs
+.agents/
+.gemini/
+.skills/
+skills/
+*.skill
+.cursor/
+.claude/
+.windsurf/
