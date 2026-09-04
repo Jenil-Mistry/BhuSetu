@@ -13,28 +13,39 @@ BhuSetu is a high-performance geospatial land acquisition and management platfor
 
 ---
 
+## 📖 Developer Documentation & Project Status
+
+> **New to the project?** Detailed developer guides, completed milestones, and remaining roadmaps are documented inside the [`docs/`](file:///c:/Users/yg159/OneDrive/Desktop/sih/BhuSetu/docs/README.md) folder:
+> - 📄 **[Master Developer Handover](file:///c:/Users/yg159/OneDrive/Desktop/sih/BhuSetu/docs/README.md)**: System overview, architecture diagram, and full-stack setup.
+> - 🖥️ **[Frontend Status & Guide](file:///c:/Users/yg159/OneDrive/Desktop/sih/BhuSetu/docs/FRONTEND.md)**: Next.js 16 app router, MapLibre GIS, all 8 role views, and pending tasks.
+> - ⚙️ **[Backend Status & Guide](file:///c:/Users/yg159/OneDrive/Desktop/sih/BhuSetu/docs/BACKEND.md)**: FastAPI engine, PostGIS schema, RFCTLARR workflow, test suite, and roadmap.
+
+---
+
 ## 📁 Repository Structure
 
 ```text
 BhuSetu/
+├── docs/                           # Comprehensive developer handover documentation
+│   ├── README.md                   # Master index & quickstart
+│   ├── FRONTEND.md                 # Frontend architecture, implemented views & roadmap
+│   └── BACKEND.md                  # Backend architecture, PostGIS schema & roadmap
 ├── docker-compose.yml              # Local MinIO S3 object storage with auto-bucket provisioning
-├── README.md                       # Monorepo documentation
-├── backend/
+├── README.md                       # Monorepo overview
+├── backend/                        # FastAPI Python engine (No ORM, PostGIS, S3)
 │   ├── .env.example                # Supabase and MinIO environment configurations
-│   ├── requirements.txt            # FastAPI, uvicorn, supabase, boto3, python-dotenv (No ORM)
-│   ├── main.py                     # FastAPI application with Supabase & MinIO endpoints
-│   ├── db/
-│   │   └── supabase_init.sql       # PostGIS schema, enums, cadastral tables, and calculate_parcel_intersections RPC
-│   └── storage/
-│       ├── __init__.py
-│       └── minio_client.py         # MinioStorageService for KML & geotagged image uploads
-└── frontend/
-    ├── .env.example                # Map style and API URL configurations
-    ├── package.json                # Next.js dependencies + maplibre-gl & lucide-react
-    ├── app/                        # Next.js App Router (pages, layout, styles)
-    ├── components/                 # Reusable UI components
-    ├── lib/                        # Utility functions
-    └── hooks/                      # Custom React hooks
+│   ├── requirements.txt            # FastAPI, uvicorn, supabase, boto3, python-dotenv
+│   ├── main.py                     # FastAPI application entrypoint
+│   ├── db/                         # PostGIS schema, migrations & seed scripts
+│   └── storage/                    # MinioStorageService for KML & geotagged photos
+├── frontend/                       # Next.js 16, React 19, MapLibre GIS, Tailwind v4
+│   ├── .env.example                # Map style and API URL configurations
+│   ├── package.json                # Next.js dependencies + maplibre-gl & lucide-react
+│   ├── app/                        # Next.js App Router (pages, layout, styles)
+│   ├── components/                 # Reusable UI & role-specific stakeholder views
+│   ├── lib/                        # API client, offline mock store, and auth context
+│   └── hooks/                      # Custom React hooks
+└── backend_plan/                   # Initial SIH problem architecture plans
 ```
 
 ---

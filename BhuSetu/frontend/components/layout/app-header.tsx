@@ -21,6 +21,7 @@ import {
   X
 } from 'lucide-react';
 import { useAuth, UserRole } from '@/lib/auth-context';
+import { DashboardSubNav } from '@/components/dashboard/dashboard-subnav';
 
 interface AppHeaderProps {
   // Optional props for backward compatibility if needed
@@ -291,6 +292,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ currentRole: propRole, onR
           </div>
         </div>
       )}
+
+      {/* Statutory Sub Navigation on Dashboard Pages */}
+      {isDashboardPage && <DashboardSubNav />}
     </header>
   );
 };
