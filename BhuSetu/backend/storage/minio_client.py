@@ -37,7 +37,12 @@ class MinioStorageService:
             endpoint_url=self.endpoint_url,
             aws_access_key_id=self.access_key,
             aws_secret_access_key=self.secret_key,
-            config=Config(signature_version="s3v4"),
+            config=Config(
+                signature_version="s3v4",
+                connect_timeout=2,
+                read_timeout=5,
+                retries={"max_attempts": 1},
+            ),
             region_name="us-east-1",
         )
 
@@ -131,6 +136,25 @@ class MinioStorageService:
             object_key=object_key,
             content_type=content_type,
             metadata={"parcel_id": str(parcel_id), "file_type": "survey_image"},
+        )
+
+    def generate_presigned_upload_url(
+        self,
+        object_key: str,
+        expires_in: int = 3600,
+        content_type: str = "application/octet-stream",
+    ) -> str:
+        """
+        Generates a secure temporary pre-signed URL to PUT/upload an object directly from the client.
+        """
+        return self.s3_client.generate_presigned_url(
+            ClientMethod="put_object",
+            Params={
+                "Bucket": self.bucket_name,
+                "Key": object_key,
+                "ContentType": content_type,
+            },
+            ExpiresIn=expires_in,
         )
 
     def generate_presigned_download_url(

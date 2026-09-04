@@ -38,6 +38,7 @@ venv/
 .venv/
 ENV/
 *.egg-info/
+.pytest_cache/
 
 # OS & IDE
 .DS_Store
