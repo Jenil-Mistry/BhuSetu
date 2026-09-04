@@ -1,0 +1,104 @@
+'use client';
+
+import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { 
+  FolderKanban, 
+  Map, 
+  FileText, 
+  Coins, 
+  Users, 
+  BarChart3, 
+  ShieldCheck, 
+  LayoutDashboard 
+} from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
+
+export const DashboardSubNav: React.FC = () => {
+  const pathname = usePathname();
+  const { user } = useAuth();
+
+  const roleHome = user?.dashboardRoute || '/dashboard/pia';
+
+  const navItems = [
+    {
+      label: 'My Role Console',
+      href: roleHome,
+      icon: LayoutDashboard,
+      matchExact: true,
+    },
+    {
+      label: 'Projects & Proposals',
+      href: '/dashboard/projects',
+      icon: FolderKanban,
+      matchPrefix: '/dashboard/projects',
+    },
+    {
+      label: 'Cadastral GIS & Spatial',
+      href: '/dashboard/gis',
+      icon: Map,
+      matchPrefix: '/dashboard/gis',
+    },
+    {
+      label: 'Gazette & Notifications',
+      href: '/dashboard/notifications',
+      icon: FileText,
+      matchPrefix: '/dashboard/notifications',
+    },
+    {
+      label: 'Awards & PFMS Disbursement',
+      href: '/dashboard/compensation',
+      icon: Coins,
+      matchPrefix: '/dashboard/compensation',
+    },
+    {
+      label: 'R&R Rehabilitation',
+      href: '/dashboard/rehabilitation',
+      icon: Users,
+      matchPrefix: '/dashboard/rehabilitation',
+    },
+    {
+      label: 'MIS Reports & Analytics',
+      href: '/dashboard/reports',
+      icon: BarChart3,
+      matchPrefix: '/dashboard/reports',
+    },
+    {
+      label: 'Audit & Hash Verification',
+      href: '/dashboard/audit',
+      icon: ShieldCheck,
+      matchPrefix: '/dashboard/audit',
+    },
+  ];
+
+  return (
+    <nav className="w-full bg-white border-b border-slate-200 overflow-x-auto scrollbar-none shadow-xs sticky top-[108px] z-40">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="flex space-x-1 sm:space-x-2 py-1.5 min-w-max">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = item.matchExact 
+              ? pathname === item.href 
+              : (item.matchPrefix ? pathname?.startsWith(item.matchPrefix) : false);
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 ${
+                  isActive
+                    ? 'bg-[#166534] text-white shadow-xs font-bold'
+                    : 'text-slate-600 hover:text-[#0F2E53] hover:bg-slate-100/80'
+                }`}
+              >
+                <Icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}`} />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </nav>
+  );
+};

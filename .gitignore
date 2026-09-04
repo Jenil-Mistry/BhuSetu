@@ -1,49 +1,9 @@
-# Dependencies
-node_modules/
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-
-# Next.js build
-.next/
-out/
-build/
-dist/
-
-# Env & secrets
-.env
-.env*.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-env/
-venv/
-.venv/
-ENV/
-*.egg-info/
-
-# OS & IDE
-.DS_Store
-Thumbs.db
-*.pem
-*.tsbuildinfo
-next-env.d.ts
+# AI Agent & Skill Configs
 .agents/
 .gemini/
+.skills/
+skills/
+*.skill
+.cursor/
+.claude/
+.windsurf/
