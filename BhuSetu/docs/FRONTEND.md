@@ -8,7 +8,7 @@ This document details the frontend implementation of the **BhuSetu** platform, i
 
 | Layer | Technology | Version | Purpose |
 | :--- | :--- | :--- | :--- |
-| **Framework** | Next.js (App Router, Turbopack) | `16.2.6` | Server/Client components, dynamic routing, metadata |
+| **Framework** | Next.js (App Router, Webpack) | `16.2.6` | Server/Client components, dynamic routing, metadata |
 | **Language** | TypeScript | `^5.0` | Strict type safety for statutory entities and API models |
 | **Runtime UI** | React | `19.2.4` | Component lifecycle and hooks |
 | **Styling** | Tailwind CSS (v4) & `@tailwindcss/postcss` | `^4.0` | High-fidelity government design system tokens |
@@ -82,11 +82,12 @@ The frontend connects to the FastAPI backend via [`frontend/lib/api.ts`](file://
 
 ## ✅ What Has Been Implemented
 
-### 1. Public Portal & Citizen Khasra Inquiry (`/` & `/dashboard/citizen`)
-- **Interactive Khasra Search**: Dropdown cascades (State -> District -> Tehsil -> Village -> Khasra No).
-- **Statutory Stage Display**: Shows real-time progress across Section 11 Preliminary Notification, Section 15 Hearings, and Section 19 Declarations.
-- **Gazette Notices**: Downloadable and readable official S.O. gazette publication records.
-- **Public Objection Submission**: Multi-step modal allowing citizens to file grievances with supporting document uploads.
+### 1. Streamlined Public Portal (`/`) & Authentication Gateway (`/login`)
+- **Clear Audience Separation**: Dedicated, prominent entry paths for Citizens / Landowners (`/login?type=citizen`) and Authorities / Departments (`/login?type=authority`).
+- **Core Platform Capabilities**: Highlights three distinct capabilities (Workflow Visibility, GIS-Assisted Spatial Verification, and Compensation / R&R Monitoring) with legally accurate language.
+- **Statutory Lifecycle Guide**: Outlines the 4 key stages governed by the RFCTLARR Act, 2013 (Section 11 Preliminary Notification, Section 15 Hearing of Objections, Section 19 Acquisition Declaration, Section 23/30 Awards).
+- **GIGW-Compliant Header & Footer**: Replaced session-dependent "Go to Official Dashboard" button on public pages with standardized login actions, verified official links, and institutional metadata via `lib/site-config.ts`.
+- **Privacy by Design**: Removed unauthenticated public Khasra queries to prevent unauthorized data exposure; landowners securely inspect itemized awards and DBT status via the authenticated Citizen portal (`/dashboard/citizen`).
 
 ### 2. Multi-Stakeholder Role Portals (`/dashboard/*`)
 - **CALA / Land Acquisition Collector**:

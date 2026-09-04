@@ -1,14 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { 
-  Building2, 
   Layers, 
   ShieldCheck, 
   Smartphone, 
-  Scale, 
   UserCheck, 
   Landmark,
   ArrowRight,
@@ -16,19 +14,32 @@ import {
   Mail,
   KeyRound,
   RefreshCw,
-  HelpCircle,
   CheckCircle2,
   AlertCircle,
-  ExternalLink
+  ArrowLeft
 } from 'lucide-react';
 import { useAuth, UserRole, PRESET_USERS } from '@/lib/auth-context';
+import { SITE_CONFIG } from '@/lib/site-config';
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuth();
 
-  const [authTab, setAuthTab] = useState<'officer' | 'citizen'>('officer');
-  
+  const initialType = searchParams.get('type');
+  const [authTab, setAuthTab] = useState<'officer' | 'citizen'>(
+    initialType === 'citizen' ? 'citizen' : 'officer'
+  );
+
+  useEffect(() => {
+    const type = searchParams.get('type');
+    if (type === 'citizen') {
+      setAuthTab('citizen');
+    } else if (type === 'authority' || type === 'officer') {
+      setAuthTab('officer');
+    }
+  }, [searchParams]);
+
   // Officer form state
   const [officerEmail, setOfficerEmail] = useState('director.nhai@nic.in');
   const [officerPassword, setOfficerPassword] = useState('••••••••••••');
@@ -104,10 +115,7 @@ export default function LoginPage() {
     }, 600);
   };
 
-  const handleQuickRoleLogin = (role: UserRole) => {
-    login(role);
-    router.push(PRESET_USERS[role].dashboardRoute);
-  };
+
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
@@ -119,18 +127,19 @@ export default function LoginPage() {
         <div className="mx-auto max-w-6xl flex items-center justify-between text-xs">
           <div className="flex items-center space-x-2">
             <span className="font-semibold text-amber-400 uppercase text-[11px]">
-              भारत सरकार | Government of India
+              {SITE_CONFIG.governmentEntity.countryHindi} | {SITE_CONFIG.governmentEntity.country}
             </span>
             <span className="text-slate-600 hidden sm:inline">•</span>
             <span className="text-slate-300 hidden sm:inline text-[11px]">
-              सड़क परिवहन एवं राजमार्ग मंत्रालय (MoRTH)
+              {SITE_CONFIG.name} Statutory Gateway
             </span>
           </div>
           <Link 
             href="/" 
-            className="text-slate-300 hover:text-white transition-colors text-[11px] flex items-center space-x-1"
+            className="text-slate-300 hover:text-white transition-colors text-[11px] flex items-center space-x-1.5"
           >
-            <span>← Back to Public Portal</span>
+            <ArrowLeft className="h-3 w-3" />
+            <span>Back to Public Portal</span>
           </Link>
         </div>
       </div>
@@ -140,18 +149,18 @@ export default function LoginPage() {
         <div className="sm:mx-auto sm:w-full sm:max-w-xl">
           {/* Logo & Portal Identity */}
           <div className="text-center">
-            <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white border border-slate-200 text-[#0F2E53] shadow-sm mb-3">
+            <Link href="/" className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white border border-slate-200 text-[#0F2E53] shadow-sm mb-3">
               <Layers className="h-7 w-7 text-[#166534]" />
-            </div>
+            </Link>
             <h1 className="text-2xl font-extrabold tracking-tight text-[#0F2E53]">
-              BhuSetu <span className="text-[#166534] font-bold">भूसेतु</span>
+              {SITE_CONFIG.name} <span className="text-[#166534] font-bold">{SITE_CONFIG.hindiName}</span>
             </h1>
             <p className="text-xs text-slate-600 mt-1 font-medium">
               RFCTLARR Act, 2013 Statutory Access & Authentication Gateway
             </p>
             <div className="inline-flex items-center space-x-1.5 mt-2 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-800 font-semibold">
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-              <span>National Single Sign-On (Parichay / Aadhaar OTP)</span>
+              <span>Role-Specific Workspace Access (Demo Mode)</span>
             </div>
           </div>
 
@@ -161,158 +170,33 @@ export default function LoginPage() {
             <div className="grid grid-cols-2 border-b border-slate-200 bg-slate-50/50">
               <button
                 type="button"
-                onClick={() => setAuthTab('officer')}
-                className={`py-3 text-xs font-bold transition-all border-b-2 flex items-center justify-center space-x-2 cursor-pointer ${
-                  authTab === 'officer'
-                    ? 'border-[#166534] text-[#0F2E53] bg-white'
-                    : 'border-transparent text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                <Landmark className={`h-4 w-4 ${authTab === 'officer' ? 'text-[#166534]' : 'text-slate-400'}`} />
-                <span>Officer / Authority SSO</span>
-              </button>
-
-              <button
-                type="button"
                 onClick={() => setAuthTab('citizen')}
-                className={`py-3 text-xs font-bold transition-all border-b-2 flex items-center justify-center space-x-2 cursor-pointer ${
+                className={`py-3.5 text-xs font-bold transition-all border-b-2 flex items-center justify-center space-x-2 cursor-pointer ${
                   authTab === 'citizen'
                     ? 'border-[#166534] text-[#0F2E53] bg-white'
                     : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
                 <UserCheck className={`h-4 w-4 ${authTab === 'citizen' ? 'text-[#166534]' : 'text-slate-400'}`} />
-                <span>Citizen / Landowner OTP</span>
+                <span>Citizen / Landowner Login</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setAuthTab('officer')}
+                className={`py-3.5 text-xs font-bold transition-all border-b-2 flex items-center justify-center space-x-2 cursor-pointer ${
+                  authTab === 'officer'
+                    ? 'border-[#166534] text-[#0F2E53] bg-white'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <Landmark className={`h-4 w-4 ${authTab === 'officer' ? 'text-[#166534]' : 'text-slate-400'}`} />
+                <span>Authority / Department SSO</span>
               </button>
             </div>
 
             <div className="p-6 sm:p-8">
-              {/* TAB 1: OFFICER LOGIN */}
-              {authTab === 'officer' && (
-                <form onSubmit={handleOfficerLogin} className="space-y-4">
-                  {officerError && (
-                    <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 flex items-center space-x-2">
-                      <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
-                      <span>{officerError}</span>
-                    </div>
-                  )}
-
-                  {/* Role Selector */}
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Official Role / Statutory Designation
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={officerRole}
-                        onChange={(e) => {
-                          const r = e.target.value as UserRole;
-                          setOfficerRole(r);
-                          setOfficerEmail(PRESET_USERS[r].identifier);
-                        }}
-                        className="w-full text-xs font-medium bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-slate-800 focus:bg-white focus:border-[#166534] focus:ring-1 focus:ring-[#166534] focus:outline-none"
-                      >
-                        <option value="pia">Project Implementing Agency (PIA) - Col. R. K. Sharma</option>
-                        <option value="cala">CALA / District Collector - Dr. S. Mukherjee, IAS</option>
-                        <option value="revenue-officer">Field Revenue Officer / Tehsildar - Rajesh Kumar</option>
-                        <option value="central">Central Authority / Apex - Joint Secretary, MoRTH</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Officer Email */}
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Official NIC / Government Email ID
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                        <Mail className="h-4 w-4" />
-                      </div>
-                      <input
-                        type="email"
-                        value={officerEmail}
-                        onChange={(e) => setOfficerEmail(e.target.value)}
-                        placeholder="officer.name@nic.in"
-                        required
-                        className="w-full pl-9 pr-3 py-2.5 text-xs font-medium bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:bg-white focus:border-[#166534] focus:ring-1 focus:ring-[#166534] focus:outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Password */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="block text-xs font-bold text-slate-700">
-                        Parichay / SSO Password
-                      </label>
-                      <a href="#" onClick={(e) => { e.preventDefault(); alert('In production, password reset is handled via NIC Parichay Service Desk.'); }} className="text-[11px] text-[#166534] hover:underline">
-                        Forgot Password?
-                      </a>
-                    </div>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                        <Lock className="h-4 w-4" />
-                      </div>
-                      <input
-                        type="password"
-                        value={officerPassword}
-                        onChange={(e) => setOfficerPassword(e.target.value)}
-                        placeholder="••••••••••••"
-                        required
-                        className="w-full pl-9 pr-3 py-2.5 text-xs font-medium bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:bg-white focus:border-[#166534] focus:ring-1 focus:ring-[#166534] focus:outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Security Captcha */}
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Security Verification (CAPTCHA)
-                    </label>
-                    <div className="flex items-center space-x-3">
-                      <div className="bg-slate-200 border border-slate-300 px-4 py-2 rounded-xl select-none font-mono tracking-widest text-base font-bold text-[#0F2E53] line-through decoration-slate-400">
-                        {captchaValue}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={refreshCaptcha}
-                        className="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
-                        title="Generate New CAPTCHA"
-                      >
-                        <RefreshCw className="h-4 w-4" />
-                      </button>
-                      <input
-                        type="text"
-                        value={captchaInput}
-                        onChange={(e) => setCaptchaInput(e.target.value)}
-                        placeholder="Enter CAPTCHA"
-                        maxLength={5}
-                        required
-                        className="flex-1 px-3 py-2 text-xs font-mono font-bold uppercase bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:bg-white focus:border-[#166534] focus:ring-1 focus:ring-[#166534] focus:outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Submit Button */}
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full mt-2 flex items-center justify-center space-x-2 py-2.5 px-4 rounded-xl bg-[#0F2E53] hover:bg-[#0a203a] text-white text-xs font-bold shadow-xs transition-all disabled:opacity-50 cursor-pointer"
-                  >
-                    {isLoading ? (
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                    ) : (
-                      <>
-                        <ShieldCheck className="h-4 w-4" />
-                        <span>Sign In via NIC Parichay SSO</span>
-                      </>
-                    )}
-                  </button>
-                </form>
-              )}
-
-              {/* TAB 2: CITIZEN / PAF LOGIN */}
+              {/* TAB 1: CITIZEN / PAF LOGIN */}
               {authTab === 'citizen' && (
                 <form onSubmit={handleCitizenLogin} className="space-y-4">
                   {citizenError && (
@@ -323,7 +207,7 @@ export default function LoginPage() {
                   )}
 
                   <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl text-xs text-emerald-900 leading-relaxed">
-                    <span className="font-bold">Notice to Project Affected Families:</span> Access your itemized compensation ledger, award status, solatium breakdown, and PFMS DBT bank details using your Aadhaar or registered mobile.
+                    <span className="font-bold">Project Affected Families:</span> Sign in to securely inspect your compensation ledger, statutory award status, solatium sheet, and PFMS payment records.
                   </div>
 
                   {/* Aadhaar / Mobile Input */}
@@ -389,107 +273,161 @@ export default function LoginPage() {
                     ) : otpSent ? (
                       <>
                         <CheckCircle2 className="h-4 w-4" />
-                        <span>Verify OTP & Open Citizen Console</span>
+                        <span>Verify OTP & Enter Citizen Console</span>
                       </>
                     ) : (
                       <>
                         <ArrowRight className="h-4 w-4" />
-                        <span>Send Aadhaar OTP</span>
+                        <span>Send Demo Verification OTP</span>
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
+
+              {/* TAB 2: OFFICER / AUTHORITY LOGIN */}
+              {authTab === 'officer' && (
+                <form onSubmit={handleOfficerLogin} className="space-y-4">
+                  {officerError && (
+                    <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 flex items-center space-x-2">
+                      <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
+                      <span>{officerError}</span>
+                    </div>
+                  )}
+
+                  {/* Role Selector */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Designated Authority Role
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={officerRole}
+                        onChange={(e) => {
+                          const r = e.target.value as UserRole;
+                          setOfficerRole(r);
+                          setOfficerEmail(PRESET_USERS[r].identifier);
+                        }}
+                        className="w-full text-xs font-medium bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-slate-800 focus:bg-white focus:border-[#166534] focus:ring-1 focus:ring-[#166534] focus:outline-none"
+                      >
+                        <option value="pia">Project Implementing Agency (PIA) - Col. R. K. Sharma</option>
+                        <option value="cala">Competent Authority / Collector (CALA) - Dr. S. Mukherjee, IAS</option>
+                        <option value="revenue-officer">Field Revenue Officer / Tehsildar - Rajesh Kumar</option>
+                        <option value="central">Central Monitoring Authority - Joint Secretary, MoRTH</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Officer Email */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Official Government Email ID
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <Mail className="h-4 w-4" />
+                      </div>
+                      <input
+                        type="email"
+                        value={officerEmail}
+                        onChange={(e) => setOfficerEmail(e.target.value)}
+                        placeholder="officer.name@gov.in"
+                        required
+                        className="w-full pl-9 pr-3 py-2.5 text-xs font-medium bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:bg-white focus:border-[#166534] focus:ring-1 focus:ring-[#166534] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Password */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs font-bold text-slate-700">
+                        SSO Password
+                      </label>
+                      <a href="#" onClick={(e) => { e.preventDefault(); alert('Password management is handled via the government SSO service desk.'); }} className="text-[11px] text-[#166534] hover:underline">
+                        Forgot Password?
+                      </a>
+                    </div>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <Lock className="h-4 w-4" />
+                      </div>
+                      <input
+                        type="password"
+                        value={officerPassword}
+                        onChange={(e) => setOfficerPassword(e.target.value)}
+                        placeholder="••••••••••••"
+                        required
+                        className="w-full pl-9 pr-3 py-2.5 text-xs font-medium bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:bg-white focus:border-[#166534] focus:ring-1 focus:ring-[#166534] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Security Captcha */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Security Verification (CAPTCHA)
+                    </label>
+                    <div className="flex items-center space-x-3">
+                      <div className="bg-slate-200 border border-slate-300 px-4 py-2 rounded-xl select-none font-mono tracking-widest text-base font-bold text-[#0F2E53] line-through decoration-slate-400">
+                        {captchaValue}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={refreshCaptcha}
+                        className="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+                        title="Generate New CAPTCHA"
+                      >
+                        <RefreshCw className="h-4 w-4" />
+                      </button>
+                      <input
+                        type="text"
+                        value={captchaInput}
+                        onChange={(e) => setCaptchaInput(e.target.value)}
+                        placeholder="Enter CAPTCHA"
+                        maxLength={5}
+                        required
+                        className="flex-1 px-3 py-2 text-xs font-mono font-bold uppercase bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:bg-white focus:border-[#166534] focus:ring-1 focus:ring-[#166534] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full mt-2 flex items-center justify-center space-x-2 py-2.5 px-4 rounded-xl bg-[#0F2E53] hover:bg-[#0a203a] text-white text-xs font-bold shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+                  >
+                    {isLoading ? (
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    ) : (
+                      <>
+                        <ShieldCheck className="h-4 w-4" />
+                        <span>Sign In to Official Workspace</span>
                       </>
                     )}
                   </button>
                 </form>
               )}
             </div>
-
-            {/* Quick 1-Click Evaluation Bar */}
-            <div className="bg-slate-50 px-6 py-4 border-t border-slate-200">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2.5 flex items-center justify-between">
-                <span>Evaluation Presets (1-Click Instant Login):</span>
-                <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 lowercase">
-                  demo evaluator mode
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleQuickRoleLogin('pia')}
-                  className="flex items-center space-x-2 p-2 bg-white hover:bg-slate-100 rounded-lg border border-slate-200 text-left transition-colors cursor-pointer"
-                >
-                  <Landmark className="h-4 w-4 text-[#166534] shrink-0" />
-                  <div className="truncate">
-                    <div className="text-[11px] font-bold text-[#0F2E53] leading-tight">PIA Executive</div>
-                    <div className="text-[9px] text-slate-400 truncate">Col. R. K. Sharma</div>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleQuickRoleLogin('cala')}
-                  className="flex items-center space-x-2 p-2 bg-white hover:bg-slate-100 rounded-lg border border-slate-200 text-left transition-colors cursor-pointer"
-                >
-                  <Scale className="h-4 w-4 text-[#0F2E53] shrink-0" />
-                  <div className="truncate">
-                    <div className="text-[11px] font-bold text-[#0F2E53] leading-tight">CALA / Collector</div>
-                    <div className="text-[9px] text-slate-400 truncate">Dr. S. Mukherjee</div>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleQuickRoleLogin('revenue-officer')}
-                  className="flex items-center space-x-2 p-2 bg-white hover:bg-slate-100 rounded-lg border border-slate-200 text-left transition-colors cursor-pointer"
-                >
-                  <Smartphone className="h-4 w-4 text-emerald-600 shrink-0" />
-                  <div className="truncate">
-                    <div className="text-[11px] font-bold text-[#0F2E53] leading-tight">Field Officer</div>
-                    <div className="text-[9px] text-slate-400 truncate">Rajesh Kumar</div>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleQuickRoleLogin('citizen')}
-                  className="flex items-center space-x-2 p-2 bg-white hover:bg-slate-100 rounded-lg border border-slate-200 text-left transition-colors cursor-pointer"
-                >
-                  <UserCheck className="h-4 w-4 text-amber-600 shrink-0" />
-                  <div className="truncate">
-                    <div className="text-[11px] font-bold text-[#0F2E53] leading-tight">Citizen / PAF</div>
-                    <div className="text-[9px] text-slate-400 truncate">Ramesh Chandra</div>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleQuickRoleLogin('central')}
-                  className="flex items-center space-x-2 p-2 bg-white hover:bg-slate-100 rounded-lg border border-slate-200 text-left transition-colors cursor-pointer col-span-2 sm:col-span-1"
-                >
-                  <Building2 className="h-4 w-4 text-indigo-700 shrink-0" />
-                  <div className="truncate">
-                    <div className="text-[11px] font-bold text-[#0F2E53] leading-tight">Central Authority</div>
-                    <div className="text-[9px] text-slate-400 truncate">MoRTH Apex</div>
-                  </div>
-                </button>
-              </div>
-            </div>
           </div>
 
           {/* Statutory Security Disclaimer */}
           <div className="mt-6 text-center space-y-2">
             <p className="text-[11px] text-slate-500 max-w-lg mx-auto">
-              <strong>Statutory Warning:</strong> Unauthorized access or tampering with official land acquisition records is a cognizable offence under Section 66 of the Information Technology Act, 2000 and Section 84 of the RFCTLARR Act, 2013.
+              <strong>Notice:</strong> In demonstration mode, session roles control local UI workspace views. Enforceable authorization and database security are managed by backend access control policies.
             </p>
-            <div className="flex items-center justify-center space-x-3 text-[10px] text-slate-400">
-              <span>National Informatics Centre (NIC)</span>
-              <span>•</span>
-              <span>256-Bit SSL Encrypted</span>
-              <span>•</span>
-              <span>PFMS Integrated</span>
-            </div>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-50 flex items-center justify-center text-xs text-slate-500">Loading statutory login gateway...</div>}>
+      <LoginContent />
+    </Suspense>
   );
 }

@@ -13,15 +13,17 @@ import {
   ShieldCheck, 
   LayoutDashboard 
 } from 'lucide-react';
-import { useAuth } from '@/lib/auth-context';
+import { useAuth, ROLE_ALLOWED_ROUTES } from '@/lib/auth-context';
 
 export const DashboardSubNav: React.FC = () => {
   const pathname = usePathname();
   const { user } = useAuth();
 
-  const roleHome = user?.dashboardRoute || '/dashboard/pia';
+  if (!user) return null;
 
-  const navItems = [
+  const roleHome = user.dashboardRoute;
+
+  const allNavItems = [
     {
       label: 'My Role Console',
       href: roleHome,
@@ -71,6 +73,17 @@ export const DashboardSubNav: React.FC = () => {
       matchPrefix: '/dashboard/audit',
     },
   ];
+
+  // Filter nav items to only those the current role is allowed to access
+  const allowedRoutes = ROLE_ALLOWED_ROUTES[user.role] || [];
+  const navItems = allNavItems.filter((item) => {
+    // Always show "My Role Console" which is the roleHome
+    if (item.matchExact) return true;
+    // Check if the nav item's href is in the allowed routes for this role
+    return allowedRoutes.some(
+      (route) => item.href === route || item.href.startsWith(route + '/')
+    );
+  });
 
   return (
     <nav className="w-full bg-white border-b border-slate-200 overflow-x-auto scrollbar-none shadow-xs sticky top-[108px] z-40">

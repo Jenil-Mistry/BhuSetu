@@ -4,6 +4,15 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 export type UserRole = 'pia' | 'cala' | 'revenue-officer' | 'citizen' | 'central';
 
+export type UserCapability =
+  | 'project:create'
+  | 'proposal:review'
+  | 'parcel:verify'
+  | 'compensation:manage'
+  | 'rr:manage'
+  | 'reports:view'
+  | 'audit:view';
+
 export interface UserProfile {
   id: string;
   role: UserRole;
@@ -15,6 +24,76 @@ export interface UserProfile {
   initials: string;
   badge: string;
   dashboardRoute: string;
+  capabilities: UserCapability[];
+}
+
+export const ROLE_CAPABILITIES: Record<UserRole, UserCapability[]> = {
+  pia: ['project:create', 'proposal:review', 'reports:view'],
+  cala: ['proposal:review', 'compensation:manage', 'reports:view', 'audit:view'],
+  'revenue-officer': ['parcel:verify', 'reports:view'],
+  citizen: ['compensation:manage'], // View own compensation details
+  central: [
+    'project:create',
+    'proposal:review',
+    'parcel:verify',
+    'compensation:manage',
+    'rr:manage',
+    'reports:view',
+    'audit:view',
+  ],
+};
+
+/**
+ * Allowed dashboard sub-routes per role.
+ * Each role can only access their own role console + specific shared pages.
+ */
+export const ROLE_ALLOWED_ROUTES: Record<UserRole, string[]> = {
+  pia: [
+    '/dashboard/pia',
+    '/dashboard/projects',
+    '/dashboard/gis',
+    '/dashboard/notifications',
+    '/dashboard/reports',
+  ],
+  cala: [
+    '/dashboard/cala',
+    '/dashboard/projects',
+    '/dashboard/gis',
+    '/dashboard/notifications',
+    '/dashboard/compensation',
+    '/dashboard/rehabilitation',
+    '/dashboard/reports',
+    '/dashboard/audit',
+  ],
+  'revenue-officer': [
+    '/dashboard/revenue-officer',
+    '/dashboard/gis',
+    '/dashboard/notifications',
+    '/dashboard/reports',
+  ],
+  citizen: [
+    '/dashboard/citizen',
+    '/dashboard/compensation',
+    '/dashboard/notifications',
+  ],
+  central: [
+    '/dashboard/central',
+    '/dashboard/projects',
+    '/dashboard/gis',
+    '/dashboard/notifications',
+    '/dashboard/compensation',
+    '/dashboard/rehabilitation',
+    '/dashboard/reports',
+    '/dashboard/audit',
+  ],
+};
+
+/** Check whether a given pathname is accessible for the specified role. */
+export function isRouteAllowed(role: UserRole, pathname: string): boolean {
+  const allowed = ROLE_ALLOWED_ROUTES[role];
+  if (!allowed) return false;
+  // Check if the path starts with any of the allowed routes
+  return allowed.some((route) => pathname === route || pathname.startsWith(route + '/'));
 }
 
 export const PRESET_USERS: Record<UserRole, UserProfile> = {
@@ -29,6 +108,7 @@ export const PRESET_USERS: Record<UserRole, UserProfile> = {
     initials: 'RS',
     badge: 'PIA Executive',
     dashboardRoute: '/dashboard/pia',
+    capabilities: ROLE_CAPABILITIES.pia,
   },
   cala: {
     id: 'usr-cala-01',
@@ -41,6 +121,7 @@ export const PRESET_USERS: Record<UserRole, UserProfile> = {
     initials: 'SM',
     badge: 'CALA / Collector',
     dashboardRoute: '/dashboard/cala',
+    capabilities: ROLE_CAPABILITIES.cala,
   },
   'revenue-officer': {
     id: 'usr-ro-01',
@@ -53,6 +134,7 @@ export const PRESET_USERS: Record<UserRole, UserProfile> = {
     initials: 'RK',
     badge: 'Field Revenue Officer',
     dashboardRoute: '/dashboard/revenue-officer',
+    capabilities: ROLE_CAPABILITIES['revenue-officer'],
   },
   citizen: {
     id: 'usr-cit-01',
@@ -65,6 +147,7 @@ export const PRESET_USERS: Record<UserRole, UserProfile> = {
     initials: 'RY',
     badge: 'Citizen / PAF',
     dashboardRoute: '/dashboard/citizen',
+    capabilities: ROLE_CAPABILITIES.citizen,
   },
   central: {
     id: 'usr-central-01',
@@ -77,6 +160,7 @@ export const PRESET_USERS: Record<UserRole, UserProfile> = {
     initials: 'AV',
     badge: 'Central Authority',
     dashboardRoute: '/dashboard/central',
+    capabilities: ROLE_CAPABILITIES.central,
   },
 };
 
@@ -85,7 +169,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (role: UserRole) => void;
   logout: () => void;
-  availableRoles: UserProfile[];
+  hasCapability: (capability: UserCapability) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -93,16 +177,19 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const AUTH_STORAGE_KEY = 'bhusetu_active_role';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [activeRole, setActiveRole] = useState<UserRole | null>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    const savedRole = localStorage.getItem(AUTH_STORAGE_KEY) as UserRole | null;
-    if (savedRole && PRESET_USERS[savedRole]) {
-      setActiveRole(savedRole);
+  const [activeRole, setActiveRole] = useState<UserRole | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const savedRole = localStorage.getItem(AUTH_STORAGE_KEY) as UserRole | null;
+        if (savedRole && PRESET_USERS[savedRole]) {
+          return savedRole;
+        }
+      } catch {
+        // Fallback if localStorage is inaccessible
+      }
     }
-  }, []);
+    return null;
+  });
 
   const login = (role: UserRole) => {
     setActiveRole(role);
@@ -120,6 +207,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const user = activeRole ? PRESET_USERS[activeRole] : null;
 
+  const hasCapability = (capability: UserCapability): boolean => {
+    if (!user) return false;
+    return user.capabilities.includes(capability);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -127,7 +219,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!user,
         login,
         logout,
-        availableRoles: Object.values(PRESET_USERS),
+        hasCapability,
       }}
     >
       {children}
