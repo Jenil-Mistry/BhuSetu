@@ -531,11 +531,27 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    }
-  body {
-    @apply bg-background text-foreground;
-    }
+  }
   html {
     @apply font-sans;
-    }
+    font-size: 16px;
+    scroll-behavior: smooth;
+    transition: font-size 0.2s ease-in-out;
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+  html[data-font-size="standard"] {
+    font-size: 16px;
+  }
+  html[data-font-size="large"] {
+    font-size: 18px;
+  }
+  html[data-font-size="xlarge"] {
+    font-size: 20.5px;
+  }
+  body {
+    @apply bg-background text-foreground text-slate-900;
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
 }
